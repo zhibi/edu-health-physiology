@@ -1,10 +1,12 @@
 package edu.health.controller;
 
 import com.github.pagehelper.PageInfo;
-import edu.health.core.base.BaseController;
+import edu.health.core.base.controller.BaseController;
+import edu.health.core.base.dto.BaseDomain;
+import edu.health.core.mybatis.condition.MybatisCondition;
 import edu.health.domain.Info;
+import edu.health.mapper.InfoMapper;
 import edu.health.service.InfoService;
-import edu.health.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,12 +14,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import zhibi.frame.domain.Page;
-import zhibi.frame.mybatis.example.Example;
-import zhibi.frame.mybatis.example.ExampleType;
 
 import java.util.Date;
 
+/**
+ * @author 执笔
+ * @date 2019/5/28 18:30
+ */
 @RequestMapping("info")
 @Controller
 public class InfoController extends BaseController {
@@ -25,25 +28,22 @@ public class InfoController extends BaseController {
     @Autowired
     private InfoService infoService;
     @Autowired
-    private UserService userService;
+    private InfoMapper  infoMapper;
 
     /**
      * 列表
      *
-     * @param info
      * @param page
      * @param model
      * @return
      */
     @RequestMapping("list")
-    public String list(Info info, Page page, Model model) {
-        Example example = Example.getInstance()
-                .addParam("u.name", info.getUsername(), ExampleType.Operation.LIKE)
-                .addOrder("addtime", ExampleType.OrderType.DESC);
-        if (!sessionUser().getType().equals("admin") && !sessionUser().getType().equals("doctor")) {
-            example.addParam("userid", sessionUser().getId());
-        }
-        PageInfo<Info> pageInfo = infoService.selectByExample(example, page);
+    public String list(BaseDomain page, Model model) {
+        MybatisCondition condition = new MybatisCondition()
+                .eq("userid", sessionUser().getId())
+                .order("addtime", false)
+                .page(page);
+        PageInfo<Info> pageInfo = infoService.selectPage(condition);
         setModelAttribute(model, pageInfo);
         return "info/list";
     }
@@ -52,13 +52,12 @@ public class InfoController extends BaseController {
      * 录入健康数据
      *
      * @param model
-     * @param userid
      * @return
      */
-    @GetMapping("add/{userid}")
-    public String add(Model model, @PathVariable Integer userid) {
+    @GetMapping("add")
+    public String add(Model model) {
         Info info = new Info();
-        info.setUserid(userid);
+        info.setUserid(sessionUser().getId());
         model.addAttribute("info", info);
         return "info/add";
     }
@@ -71,7 +70,7 @@ public class InfoController extends BaseController {
      */
     @GetMapping("detail/{id}")
     public String detail(Model model, @PathVariable Integer id) {
-        model.addAttribute("info", infoService.selectByPrimaryKey(id));
+        model.addAttribute("info", infoMapper.selectByPrimaryKey(id));
         return "info/add";
     }
 
@@ -84,22 +83,11 @@ public class InfoController extends BaseController {
     @PostMapping("add")
     public String add(Info info) {
         info.setAddtime(new Date());
-        String tip = "";
-        if (info.getHeart() < 90) tip += "血氧太低报警  ";
-        if (info.getHeart() > 100) tip += "血氧太高报警    ";
-        if (info.getBlood1() < 60) tip += "低血压太低报警   ";
-        if (info.getBlood1() > 90) tip += "低血压太高报警   ";
-        if (info.getBlood2() < 90) tip += "高血压太低报警   ";
-        if (info.getBlood2() > 140) tip += "高血压太高报警  ";
-        if (info.getPulse() < 60) tip += "脉搏太低报警 ";
-        if (info.getPulse() > 100) tip += "脉搏太高报警    ";
-        info.setTip(tip);
         if (info.getId() == null) {
-            infoService.insertSelective(info);
+            infoMapper.insertSelective(info);
         } else {
-            infoService.updateByPrimaryKeySelective(info);
+            infoMapper.updateByPrimaryKeySelective(info);
         }
-
         return redirect("list");
     }
 
@@ -109,8 +97,7 @@ public class InfoController extends BaseController {
      */
     @GetMapping("del/{id}")
     public String del(@PathVariable Integer id) {
-        infoService.deleteByPrimaryKey(id);
+        infoMapper.deleteByPrimaryKey(id);
         return refresh();
     }
-
 }

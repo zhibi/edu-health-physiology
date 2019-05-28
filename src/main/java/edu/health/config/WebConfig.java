@@ -18,7 +18,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Autowired
     private ParamInterceptor   paramInterceptor;
     @Autowired
-    private ConsoleInterceptor consoleInterceptor
+    private ConsoleInterceptor consoleInterceptor;
 
 
     /**

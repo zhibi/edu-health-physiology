@@ -1,13 +1,12 @@
 package edu.health.controller;
 
-import edu.health.core.base.BaseController;
-import edu.health.core.context.Constant;
-import edu.health.domain.Doctor;
+
+import edu.health.core.base.controller.BaseController;
+import edu.health.core.exception.MessageException;
+import edu.health.core.mybatis.condition.MybatisCondition;
 import edu.health.domain.Info;
-import edu.health.domain.Personal;
 import edu.health.domain.User;
-import edu.health.mapper.PersonalMapper;
-import edu.health.service.DoctorService;
+import edu.health.mapper.UserMapper;
 import edu.health.service.InfoService;
 import edu.health.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +16,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import zhibi.commons.exception.MessageException;
-import zhibi.frame.mybatis.example.Example;
-import zhibi.frame.mybatis.example.ExampleType;
 
 import java.util.List;
 
@@ -31,15 +27,18 @@ import java.util.List;
 public class IndexController extends BaseController {
 
     @Autowired
-    private UserService    userService;
+    private UserService userService;
     @Autowired
-    private InfoService    infoService;
+    private InfoService infoService;
     @Autowired
-    private DoctorService  doctorService;
-    @Autowired
-    private PersonalMapper personalMapper;
+    private UserMapper  userMapper;
 
 
+    /**
+     * 登录页面
+     *
+     * @return
+     */
     @GetMapping("login")
     public String login() {
         return "login";
@@ -56,32 +55,13 @@ public class IndexController extends BaseController {
     public String index(Model model) {
         model.addAttribute("tipMsg", session.getAttribute("tipMsg"));
         session.removeAttribute("tipMsg");
-        if (sessionUser().getType().equals("user")) {
-            Example    example  = Example.getInstance().addParam("userid", sessionUser().getId()).addOrder("addtime", ExampleType.OrderType.DESC);
-            List<Info> infoList = infoService.selectByExample(example);
-            model.addAttribute("infoList", infoList);
-        }
-        if (sessionUser().getType().equals("doctor")) {
-            Doctor doctor = doctorService.selectByPrimaryKey(sessionUser().getId());
-            if (doctor == null) {
-                doctor = new Doctor();
-                doctor.setId(sessionUser().getId());
-            }
-            model.addAttribute("doctor", doctor);
-        }
+        MybatisCondition condition = new MybatisCondition()
+                .eq("userid", sessionUser().getId())
+                .order("addtime", false)
+                .page(1, Integer.MAX_VALUE);
+        List<Info> infoList = infoService.selectPage(condition).getList();
+        model.addAttribute("infoList", infoList);
         return "index";
-    }
-
-    @RequestMapping({"index-2"})
-    public String index2(Model model) {
-        model.addAttribute("tipMsg", session.getAttribute("tipMsg"));
-        session.removeAttribute("tipMsg");
-
-        Personal personal = personalMapper.selectByPrimaryKey(sessionUser().getId());
-        if (personal == null) personal = new Personal();
-        model.addAttribute("personal", personal);
-
-        return "index-2";
     }
 
 
@@ -99,10 +79,6 @@ public class IndexController extends BaseController {
             request.setAttribute("msg", "用户名或者密码错误");
             return "login";
         }
-        if (user.getStatus() == 0) {
-            request.setAttribute("msg", "用户不可用");
-            return "login";
-        }
         session.setAttribute("sessionAdmin", user);
         return "redirect:index";
     }
@@ -115,7 +91,7 @@ public class IndexController extends BaseController {
      */
     @RequestMapping("logout")
     public String logout() {
-        session.removeAttribute(Constant.SESSION.ADMIN);
+        session.removeAttribute("sessionAdmin");
         return redirect("index");
     }
 
@@ -145,59 +121,9 @@ public class IndexController extends BaseController {
         if (!sessionUser().getPassword().equalsIgnoreCase(pass)) {
             throw new MessageException("原密码错误");
         }
-        User user = userService.selectByPrimaryKey(sessionUser().getId());
+        User user = userMapper.selectByPrimaryKey(sessionUser().getId());
         user.setPassword(newpass);
-        userService.updateByPrimaryKey(user);
+        userMapper.updateByPrimaryKey(user);
         return redirect("logout");
-    }
-
-    /**
-     * 个人信息
-     *
-     * @param model
-     * @return
-     */
-    @RequestMapping("info")
-    public String info(Model model) {
-        Doctor doctor = doctorService.selectByPrimaryKey(sessionUser().getId());
-        if (null == doctor) {
-            doctor = new Doctor();
-            doctor.setId(sessionUser().getId());
-        }
-        model.addAttribute("doctor", doctor);
-        return "info";
-    }
-
-    /**
-     * 更新医生个人信息
-     *
-     * @param doctor
-     * @return
-     */
-    @RequestMapping("update")
-    public String update(Doctor doctor) {
-        if (doctorService.selectByPrimaryKey(doctor.getId()) == null)
-            doctorService.insertSelective(doctor);
-        else
-            doctorService.updateByPrimaryKeySelective(doctor);
-        return refresh();
-    }
-
-    /**
-     * 在线交流
-     */
-    @GetMapping("zxjl")
-    public String zxjl(Model model) {
-        User       user = new User();
-        List<User> list = null;
-        if (sessionUser().getType().equals("doctor")) {
-            user.setType("user");
-            list = userService.select(user);
-        } else {
-            user.setType("doctor");
-            list = userService.select(user);
-        }
-        model.addAttribute("list", list);
-        return "zxjl";
     }
 }

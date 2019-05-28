@@ -19,8 +19,13 @@ public abstract class BaseController implements Constant {
     @Autowired
     protected HttpSession        session;
     @Autowired
-    private   HttpServletRequest request;
+    protected HttpServletRequest request;
 
+    /**
+     * 登录的用户
+     *
+     * @return
+     */
     protected User sessionUser() {
         return (User) session.getAttribute(SESSION_USER);
     }
