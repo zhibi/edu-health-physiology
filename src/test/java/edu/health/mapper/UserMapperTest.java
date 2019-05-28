@@ -23,7 +23,6 @@ public class UserMapperTest {
         User user = new User();
         user.setUsername("admin");
         user.setName("超级管理员");
-        user.setType("admin");
         user.setPassword("1234");
         userMapper.insertSelective(user);
     }
