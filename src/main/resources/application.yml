@@ -1,0 +1,51 @@
+spring:
+  #datasource
+  datasource:
+    username: leibees
+    password: leibees
+    url: jdbc:mysql://120.27.24.193:3306/edu-health-physiology?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&allowMultiQueries=true
+    driver-class-name: com.mysql.jdbc.Driver
+  application:
+    name: edu-health-physiology
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    locale: zh_CN
+    time-zone: GMT+8
+  # view
+  freemarker:
+    prefix:
+    suffix: .html
+    template-loader-path: ["classpath:/templates/"]
+    settings:
+      number_format: '0.##'   #数字格式化，无小数点
+
+server:
+  port: 80
+
+#log
+logging:
+  config: classpath:logback-spring.xml
+
+# mybatis
+mybatis:
+  mapper-locations: classpath*:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+# mapper
+mapper:
+  enum-as-simple-type: true
+
+## 自定义配置
+fast:
+  generate:
+    package:
+      parent: edu.health
+    strategy:
+      sync: entity_to_database
+    global:
+      generatorFile: false
+      outputDir: F://generate//
+      enable: true
+    dataSource:
+      delOverColumn: true

@@ -1,0 +1,8 @@
+/target/
+
+### IntelliJ IDEA ###
+.idea/
+!.idea/dataSources.xml
+!.idea/encodings.xml
+*.iml
+

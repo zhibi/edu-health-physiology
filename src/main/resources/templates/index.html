@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html>
+<#include "common/common-head.html"/>
+<body class="gray-bg top-navigation">
+<div id="wrapper">
+  <div id="page-wrapper" class="gray-bg">
+    <#include "common/common-menu.html">
+    <div class="wrapper wrapper-content">
+      <div class="row" style="padding: 18px 0">
+        <div class="col-xs-12">
+          <#if sessionAdmin.type == 'user'>
+            <div class="row">
+              <div class="col-sm-8">
+                <div class="ibox float-e-margins">
+                  <div class="ibox-title">
+                    <h5>健康档案</h5>
+                    <div class="ibox-tools">
+                      <a href="/info/list">查看更多</a>
+                    </div>
+                  </div>
+                  <div class="ibox-content">
+                    <table class="table table-striped table-bordered table-hover">
+                      <thead>
+                      <tr>
+                        <@tableHead names=["上传时间","脉搏","低血压","高血压","心率"]></@tableHead>
+                      </tr>
+                      </thead>
+                      <tbody>
+                      <#list infoList as item>
+                        <#if item?index lte 10>
+                          <tr>
+                            <@tableBody model=item propMap={"addtime":"yyyy-MM-dd HH:mm:ss","pulse":"","blood1":"","blood2":"","heart":""}></@tableBody>
+                          </tr>
+                        </#if>
+                      </#list>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="row">
+              <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                  <div class="ibox-title">
+                    <h5>脉搏</h5>
+                  </div>
+                  <div class="ibox-content">
+                    <div style="height:400px" id="sales-charts"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                  <div class="ibox-title">
+                    <h5>血氧</h5>
+                  </div>
+                  <div class="ibox-content">
+                    <div style="height:400px" id="sales-charts1"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row ">
+              <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                  <div class="ibox-title">
+                    <h5>血压</h5>
+                  </div>
+                  <div class="ibox-content">
+                    <div style="height:400px" id="sales-charts2"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </#if>
+          <#if sessionAdmin.type == 'admin'>
+            <h1>欢迎你 超级管理员</h1>
+            <h2>老年人健康管理系统</h2>
+          </#if>
+          <#if sessionAdmin.type == 'doctor'>
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                  <h5>个人信息</h5>
+                </div>
+                <div class="ibox-content">
+                  <p> 姓名：${doctor.name!}</p>
+                  <p> 学历：${doctor.card!}</p>
+                  <p> 手机：${doctor.phone!}</p>
+                  <p> 年龄：${doctor.age!}</p>
+                  <p> 性别：${doctor.gender!}</p>
+                  <p> 电子邮箱：${doctor.email!}</p>
+                  <p> 科室：${doctor.dep!}</p>
+                  <p> 主治方向：${doctor.major!}</p>
+                </div>
+              </div>
+            </div>
+
+            </#if>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+<script src="/Js/echarts.min.js"></script>
+<script>
+
+    <#if sessionAdmin.type == 'user'>
+
+    var mb = [];
+    var xl = [];
+    var xyd = [];
+    var xyg = [];
+    var arr = [];
+    <#list infoList as item>
+    mb.push([${item?index}, ${item.pulse}]);
+    xl.push([${item?index}, ${item.heart}]);
+    xyd.push([${item?index}, ${item.blood1}]);
+    xyg.push([${item?index}, ${item.blood2}]);
+    arr.push([${item?index}, "${item.addtime?string('yyyy-MM-dd')}"]);
+    </#list>
+
+
+    $('#sales-charts,#sales-charts2,#sales-charts1').css({'width': '100%', 'height': '220px'});
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('sales-charts'));
+
+    var option = {
+        tooltip: {
+            trigger: 'axis',
+
+        },
+        legend: {
+            data: ['脉搏']
+        },
+        toolbox: {
+            feature: {
+                saveAsImage: {}
+            }
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis: [
+            {
+                type: 'category',
+                data: arr
+            }
+        ],
+        yAxis: [
+            {
+                type: 'value'
+            }
+        ],
+        series: [
+            {
+                name: '脉搏',
+                type: 'line',
+                stack: '总量',
+                data: mb
+            }
+        ]
+    };
+    // 使用刚指定的配置项和数据显示图表。
+    myChart.setOption(option);
+
+    var myChart1 = echarts.init(document.getElementById('sales-charts1'));
+    var option1 = {
+        tooltip: {
+            trigger: 'axis',
+
+        },
+        legend: {
+            data: ['血氧']
+        },
+        toolbox: {
+            feature: {
+                saveAsImage: {}
+            }
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis: [
+            {
+                type: 'category',
+                data: arr
+            }
+        ],
+        yAxis: [
+            {
+                type: 'value'
+            }
+        ],
+        series: [
+            {
+                name: '血氧',
+                type: 'line',
+                stack: '总量',
+                data: xl
+            }
+        ]
+    };
+    // 使用刚指定的配置项和数据显示图表。
+    myChart1.setOption(option1);
+
+
+    var myChart2 = echarts.init(document.getElementById('sales-charts2'));
+    var option2 = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross',
+                label: {
+                    backgroundColor: '#6a7985'
+                }
+            }
+        },
+        legend: {
+            data: ['低血压', "高血压"]
+        },
+        toolbox: {
+            feature: {
+                saveAsImage: {}
+            }
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis: [
+            {
+                type: 'category',
+                boundaryGap: false,
+                data: arr
+            }
+        ],
+        yAxis: [
+            {
+                type: 'value'
+            }
+        ],
+        series: [
+            {
+                name: '低血压',
+                type: 'line',
+                stack: '总量',
+                data: xyd
+            },
+            {
+                name: '高血压',
+                type: 'line',
+                stack: '总量',
+                data: xyg
+            }
+        ]
+    };
+    // 使用刚指定的配置项和数据显示图表。
+    myChart2.setOption(option2);
+
+
+    var myChart4 = echarts.init(document.getElementById('main'));
+
+    option = {
+        title: {
+            text: '血氧正常范围90%—100%,血压正常范围80—120',
+            //	subtext: '模拟数据'
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross',
+                label: {
+                    backgroundColor: '#283b56'
+                }
+            }
+        },
+        legend: {
+            data: ['血氧', '血压']
+        },
+        toolbox: {
+            show: true,
+            feature: {
+                dataView: {readOnly: false},
+                // restore: {},
+                saveAsImage: {}
+            }
+        },
+        dataZoom: {
+            show: false,
+            start: 0,
+            end: 100
+        },
+        xAxis: [
+            {
+                type: 'category',
+                boundaryGap: true,
+                data: (function () {
+                    var now = new Date();
+                    var res = [];
+                    var len = 10;
+                    while (len--) {
+                        res.unshift(now.toLocaleTimeString().replace(/^\D*/, ''));
+                        now = new Date(now - 2000);
+                    }
+                    return res;
+                })()
+            },
+
+            {
+                type: 'category',
+                boundaryGap: true,
+
+                data: (function () {
+                    var res = [];
+                    var len = 10;
+                    while (len--) {
+                        res.push(10 - len - 1);
+                    }
+                    return res;
+                })()
+            },
+
+        ],
+        yAxis: [
+            {
+                type: 'value',
+                scale: true,
+                name: '—血氧数值（%）',
+                max: 200,
+                min: 0,
+                boundaryGap: [0.2, 0.2],
+
+            },
+            {
+                type: 'value',
+                scale: true,
+                name: '—血压数值（次）',
+                max: 200,
+                min: 0,
+                boundaryGap: [0.2, 0.2]
+            }
+        ],
+        series: [
+            {
+                name: '血压',
+                type: 'bar',
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+
+                data: (function () {
+                    var res = [];
+                    var len = 10;
+                    while (len--) {
+                        res.push(Math.round(Math.random() * 40 + 90));
+                    }
+                    return res;
+
+                })()
+            },
+
+
+            {
+                name: '血氧',
+                type: 'line',
+                data: (function () {
+                    var res = [];
+                    var len = 0;
+                    while (len < 10) {
+                        res.push((Math.random() * 10 + 85).toFixed(1) - 0);
+                        len++;
+                    }
+                    return res;
+
+                })()
+            },
+
+        ]
+    };
+
+    var app = 10;
+    setInterval(function () {
+        axisData = (new Date()).toLocaleTimeString().replace(/^\D*/, '');
+
+        var data0 = option.series[0].data;
+        var data1 = option.series[1].data;
+
+        var a = data0.shift();
+        data0.push(Math.round(Math.random() * 40 + 90));
+
+        var b = data1.shift();
+        data1.push((Math.random() * 10 + 85).toFixed(1) - 0);
+
+        option.xAxis[0].data.shift();
+        option.xAxis[0].data.push(axisData);
+        option.xAxis[1].data.shift();
+        option.xAxis[1].data.push(app++);
+        //  myChart.setOption(option);
+
+        myChart4.setOption(option);
+    }, 2100);
+
+    // 使用刚指定的配置项和数据显示图表
+
+
+    // 基于准备好的dom，初始化echarts实例
+    var myChart5 = echarts.init(document.getElementById('main2'));
+
+    // 指定图表的配置项和数据
+
+    var base = +new Date(2018, 04, 04);
+
+    var oneDay = 24 * 3600 * 1000;
+    var date = [];
+
+    var data = [Math.random() * 150];
+    var now = new Date(base);
+
+    function addData2(shift) {
+        //res.unshift(now.toLocaleTimeString().replace(/^\D*/,''));
+        //now = new Date(now - 2000);
+        //now = [now.getFullYear(), now.getMonth() + 1, now.getDate()].join('/');
+        now = (new Date()).toLocaleTimeString().replace(/^\D*/, '');
+        date.push(now);
+        // data.push((Math.random() - 0.4) * 5 + data[data.length - 1]);
+        data.push((Math.random() * 10 + 70).toFixed(1) - 0);
+
+        if (shift) {
+            date.shift();
+            data.shift();
+        }
+
+        now = new Date(+new Date(now) + oneDay);
+    }
+
+    for (var i = 1; i < 100; i++) {
+        addData2();
+    }
+
+    option5 = {
+        title: {
+            text: '传感器实时数据, 说明:(脉搏正常值:60～100次/分)',
+            subtext: '模拟数据'
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: date
+        },
+        yAxis: {
+            boundaryGap: [0, '50%'],
+            type: 'value'
+        },
+        series: [
+            {
+                name: '成交',
+                type: 'line',
+                smooth: true,
+                symbol: 'none',
+                stack: 'a',
+
+                data: data
+            }
+        ]
+    };
+
+    setInterval(function () {
+        addData2(true);
+        myChart5.setOption({
+            xAxis: {
+                data: date
+            },
+            series: [{
+                name: '脉搏数据',
+                data: data
+            }]
+        });
+    }, 500);
+
+
+    // 使用刚指定的配置项和数据显示图表。
+    myChart5.setOption(option5);
+
+    </#if>
+
+
+</script>
+</html>
