@@ -81,6 +81,7 @@ public class User extends BaseDomain {
     }
 
 
+
     public String getPhone() {
         return phone;
     }
