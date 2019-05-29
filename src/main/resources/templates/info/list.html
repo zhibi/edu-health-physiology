@@ -9,23 +9,23 @@
       <div class="row white-bg" style="padding: 18px 0">
         <div class="col-xs-12">
           <div class="form-search">
-            <a href="/info/add/${sessionAdmin.id}" class="btn btn-success">录入健康数据</a>
+            <a href="/info/add" class="btn btn-success">录入健康数据</a>
           </div>
           <div class="table-responsive">
             <table class="table table-striped table-bordered table-hover">
               <thead>
               <tr>
-                <@tableHead names=["脉搏（次/分钟）","低血压","高血压","心率","录入时间","健康报告","操作"]></@tableHead>
+                <@tableHead names=["脉搏（次/分钟）","血糖","体温（摄氏度）","录入时间","操作"]></@tableHead>
               </tr>
               </thead>
               <tbody>
               <#list pageInfo.list as item>
                 <tr>
-                  <@tableBody model=item propMap={"pulse":"","blood1":"","blood2":"","heart":"","addtime":"yyyy-MM-dd HH:mm:ss","tip":""}></@tableBody>
+                  <@tableBody model=item propMap={"maibo":"","xuetang":"","tiwen":"","addtime":"yyyy-MM-dd HH:mm:ss"}></@tableBody>
                   <td>
 
-                    <a href="${basePath}/info/detail/${item.id}" >修改</a>
-                    <a href="#" onclick="if(confirm('确定删除吗？')){location.href='${basePath}/info/del/${item.id}'}">删除</a>
+                    <a href="/info/detail/${item.id}">修改</a>
+                    <a href="#" onclick="if(confirm('确定删除吗？')){location.href='/info/del/${item.id}'}">删除</a>
 
                   </td>
 

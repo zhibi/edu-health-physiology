@@ -7,7 +7,7 @@ import javax.persistence.Transient;
  *
  * @author 执笔
  */
-public abstract class BaseDomain {
+public class BaseDomain {
 
     /**
      * 分页信息
