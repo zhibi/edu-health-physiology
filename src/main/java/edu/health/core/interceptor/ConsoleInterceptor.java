@@ -22,7 +22,7 @@ public class ConsoleInterceptor implements HandlerInterceptor {
         Object attribute = request.getSession().getAttribute(SESSION_ADMIN);
         String contextPath = request.getContextPath();
         if (null == attribute) {
-            response.sendRedirect(contextPath + "/admin/login");
+            response.sendRedirect(contextPath + "/login");
             return false;
         }
         return true;

@@ -53,8 +53,6 @@ public class IndexController extends BaseController {
      */
     @RequestMapping({"/", "index"})
     public String index(Model model) {
-        model.addAttribute("tipMsg", session.getAttribute("tipMsg"));
-        session.removeAttribute("tipMsg");
         MybatisCondition condition = new MybatisCondition()
                 .eq("userid", sessionUser().getId())
                 .order("addtime", false)

@@ -27,7 +27,7 @@ public abstract class BaseController implements Constant {
      * @return
      */
     protected User sessionUser() {
-        return (User) session.getAttribute(SESSION_USER);
+        return (User) session.getAttribute(SESSION_ADMIN);
     }
 
 
@@ -67,19 +67,5 @@ public abstract class BaseController implements Constant {
     protected String redirect(String viewName) {
         return "redirect:" + viewName;
     }
-
-    /**
-     * 得到博客类型
-     *
-     * @return
-     */
-    protected String getBlogType() {
-        Object blog_type = session.getAttribute("blog_type");
-        if (null == blog_type) {
-            return "事件";
-        }
-        return blog_type.toString();
-    }
-
 
 }
